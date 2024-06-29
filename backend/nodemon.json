@@ -1,0 +1,5 @@
+{
+    "watch": ["."],
+    "ext": "c,h",
+    "exec": "gcc httpserver.c -o hser && ./hser 9176"
+  }
