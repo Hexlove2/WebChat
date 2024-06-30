@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include "mysql.c"
 
 #define BUF_SIZE 1024
 #define SMALL_BUF 1024
@@ -11,6 +12,8 @@
 void handle_request(int client_sock);
 void error_handling(char *message);
 void send_response(int clnt_sock, const char *message);
+void extract_value(const char *json, const char *key, char *value, size_t value_size);
+bool login(const char *body, const int sock);
 
 int main(int argc, char *argv[]) {
     int serv_sock, clnt_sock;
@@ -133,15 +136,12 @@ void handle_request(int clnt_sock) {
 
     // Process the received data (e.g., parse JSON, handle login logic, etc.)
     // Placeholder for JSON parsing and login logic
-
+    if(strstr(req_line,"login"))
+     if(login(body,clnt_sock))
+     {
+        printf("Login success");        
+     }
     // Sending the response
-    char response[] =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: application/json\r\n"
-        "Access-Control-Allow-Origin: *\r\n"
-        "\r\n"
-        "{\"status\":\"success\"}";
-    send_response(clnt_sock, response);
     // Free the allocated memory for the body
     free(body);
 }
@@ -154,4 +154,54 @@ void error_handling(char *message) {
     fputs(message, stderr);
     fputc('\n', stderr);
     exit(1);
+}
+
+// 从 JSON 字符串中提取值的函数
+void extract_value(const char *json, const char *key, char *value, size_t value_size) {
+    char *key_pos = strstr(json, key);
+    if (key_pos != NULL) {
+        key_pos = strchr(key_pos, ':');
+        if (key_pos != NULL) {
+            key_pos++;
+            while (*key_pos == ' ' || *key_pos == '"') {
+                key_pos++;
+            }
+            char *end_pos = strchr(key_pos, '"');
+            if (end_pos != NULL) {
+                size_t len = end_pos - key_pos;
+                if (len < value_size) {
+                    strncpy(value, key_pos, len);
+                    value[len] = '\0';
+                }
+            }
+        }
+    }
+}
+
+bool login(const char *body, const int sock)
+{
+    char username[10];
+    char password[30];
+    // 提取用户名和密码
+    extract_value(body, "username", username, sizeof(username));
+    extract_value(body, "password", password, sizeof(password));
+    printf("Body内容:%s \n",body);
+    // 打印提取的用户名和密码
+    printf("Username: %s\n", username);
+    printf("Password: %s\n", password);
+
+    if(user_search(username))
+     if(password_check(password))
+     {
+        char response[] =
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: application/json\r\n"
+            "Access-Control-Allow-Origin: *\r\n"
+            "\r\n"
+            "{\"status\":\"success\"}";
+        send_response(sock, response);
+        printf("login success \n");
+     }
+
+    return true;
 }

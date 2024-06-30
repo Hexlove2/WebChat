@@ -1,5 +1,5 @@
 {
-    "watch": ["."],
-    "ext": "c,h",
-    "exec": "gcc httpserver.c -o hser && ./hser 9176"
-  }
+  "watch": ["."],
+  "ext": "c,h",
+  "exec": "gcc httpserver.c -o hser -I/opt/homebrew/opt/mysql-client/include -L/opt/homebrew/opt/mysql-client/lib -lmysqlclient && ./hser 9176"
+}

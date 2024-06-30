@@ -32,7 +32,7 @@
         <span>您可以选择以上几种方式登陆您的账户!</span>
         <input type="text" placeholder="用户名" v-model="loginForm.username" />
         <input type="password" placeholder="密码" v-model="loginForm.password" />
-        <a href="#">忘记密码?</a>
+        <a href="#" id="errorText">忘记密码?</a>
         <button type="submit">登陆</button>
       </form>
     </div>
@@ -97,6 +97,7 @@ export default {
         console.log(result);
       } catch (error) {
         console.error('登录失败:', error);
+        this.showErrorText();
       }
     },
     async register() {
@@ -114,6 +115,11 @@ export default {
       } catch (error) {
         console.error('注册失败:', error);
       }
+    },
+    showErrorText() {
+      const errorText = document.getElementById('errorText');
+      errorText.innerText = '登录失败';
+      errorText.style.color = 'red';
     }
   },
   mounted() {
