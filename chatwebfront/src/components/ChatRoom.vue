@@ -1,6 +1,10 @@
 <template>
     <div>
-      wc
+      欢迎进入聊天室
+      <br>
+      Welcome to ChatRoom
+      <br>
+      チャットルームへようこそ
       <!-- 你的模板内容 -->
     </div>
   </template>

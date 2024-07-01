@@ -13,7 +13,8 @@ void handle_request(int client_sock);
 void error_handling(char *message);
 void send_response(int clnt_sock, const char *message);
 void extract_value(const char *json, const char *key, char *value, size_t value_size);
-bool login(const char *body, const int sock);
+bool login_request(const char *body, const int sock);
+bool register_request(const char *body, const int sock);
 
 int main(int argc, char *argv[]) {
     int serv_sock, clnt_sock;
@@ -74,9 +75,9 @@ void handle_request(int clnt_sock) {
 
     // Parsing the HTTP method from the request line
     sscanf(req_line, "%s", method);
-    printf("ssssssss \n");
+    printf("********************************************************************* \n");
     printf("%s\n",req_line);
-    printf("ssssssss \n");
+    printf("********************************************************************* \n");
     // Handling the OPTIONS request (preflight request for CORS)
     if (strcmp(method, "OPTIONS") == 0) {
         char response[] =
@@ -136,11 +137,25 @@ void handle_request(int clnt_sock) {
 
     // Process the received data (e.g., parse JSON, handle login logic, etc.)
     // Placeholder for JSON parsing and login logic
+
+    //login request
     if(strstr(req_line,"login"))
-     if(login(body,clnt_sock))
+    {
+     if(login_request(body,clnt_sock))
      {
-        printf("Login success");        
+        printf("Login success \n");        
      }
+    }
+    //register request
+    else if(strstr(req_line,"register"))
+    {
+     if(register_request(body,clnt_sock))
+     {
+        printf("register success\n");
+     }
+    }
+    printf("Ending............................................................\n");
+    //fflush(stdout);
     // Sending the response
     // Free the allocated memory for the body
     free(body);
@@ -172,13 +187,26 @@ void extract_value(const char *json, const char *key, char *value, size_t value_
                 if (len < value_size) {
                     strncpy(value, key_pos, len);
                     value[len] = '\0';
+                } else {
+                    strncpy(value, key_pos, value_size - 1);
+                    value[value_size - 1] = '\0';
                 }
+            } else {
+                // 如果没有找到结束引号，则值可能为空字符串
+                value[0] = '\0';
             }
+        } else {
+            // 如果没有找到冒号，则值可能为空字符串
+            value[0] = '\0';
         }
+    } else {
+        // 如果没有找到键，则值可能为空字符串
+        value[0] = '\0';
     }
 }
 
-bool login(const char *body, const int sock)
+
+bool login_request(const char *body, const int sock)
 {
     char username[10];
     char password[30];
@@ -191,17 +219,108 @@ bool login(const char *body, const int sock)
     printf("Password: %s\n", password);
 
     if(user_search(username))
-     if(password_check(password))
+    {
+     if(password_check(username, password))
      {
         char response[] =
             "HTTP/1.1 200 OK\r\n"
             "Content-Type: application/json\r\n"
             "Access-Control-Allow-Origin: *\r\n"
             "\r\n"
-            "{\"status\":\"success\"}";
+            "{\"status\":\"success\", \"message\":\"Login Success\"}";
         send_response(sock, response);
         printf("login success \n");
      }
+     else
+     {
+        char response[] =
+            "HTTP/1.1 401 Unauthorized\r\n"
+            "Content-Type: application/json\r\n"
+            "Access-Control-Allow-Origin: *\r\n"
+            "\r\n"
+            "{\"status\":\"error\", \"message\":\"Password Wrong\"}";
+        send_response(sock, response);
+     }
+    }
+    else
+    {
+        char response[] =
+        "HTTP/1.1 401 Unauthorized\r\n"
+        "Content-Type: application/json\r\n"
+        "Access-Control-Allow-Origin: *\r\n"
+        "\r\n"
+        "{\"status\":\"error\", \"message\":\"Username does not exists\"}";
+        send_response(sock, response);       
+        return false;        
+    }
+    return true;
+}
+
+bool register_request(const char *body, const int sock)
+{
+    char username[10];
+    char password[30];
+
+    extract_value(body, "username", username, sizeof(username));
+    extract_value(body, "password", password, sizeof(password));
+    printf("Body内容:%s \n",body);
+    // 打印提取的用户名和密码
+    printf("Username: %s\n", username);
+    printf("Password: %s\n", password);
+
+    if(strstr(body,"\"username\":\"\""))
+    {
+        char response[] =
+        "HTTP/1.1 401 Unauthorized\r\n"
+        "Content-Type: application/json\r\n"
+        "Access-Control-Allow-Origin: *\r\n"
+        "\r\n"
+        "{\"status\":\"error\", \"message\":\"Username can not be empty\"}";
+        send_response(sock, response);
+        printf("Username Empty\n");
+        return false;        
+    }
+
+    if(strstr(body,"\"password\":\"\""))
+    {
+        char response[] =
+        "HTTP/1.1 401 Unauthorized\r\n"
+        "Content-Type: application/json\r\n"
+        "Access-Control-Allow-Origin: *\r\n"
+        "\r\n"
+        "{\"status\":\"error\", \"message\":\"Password can not be empty\"}";
+        send_response(sock, response);
+        printf("Password Empty\n");
+        return false;        
+    }   
+    if(user_search(username))
+    {
+        char response[] =
+        "HTTP/1.1 401 Unauthorized\r\n"
+        "Content-Type: application/json\r\n"
+        "Access-Control-Allow-Origin: *\r\n"
+        "\r\n"
+        "{\"status\":\"error\", \"message\":\"Username already exists\"}";
+        send_response(sock, response);
+        printf("Username already exists\n");
+        return false;
+    }  
+    else
+    {
+        if(register_mysql(username,password))
+            printf("注册成功 \n");
+        char response[] =
+        "HTTP/1.1 200 Unauthorized\r\n"
+        "Content-Type: application/json\r\n"
+        "Access-Control-Allow-Origin: *\r\n"
+        "\r\n"
+        "{\"status\":\"success\", \"message\":\"恭喜🎉:注册成功\"}";
+        send_response(sock, response);
+        printf("Register Success\n");
+        return false;
+        
+    }
+    //fflush(stdout);
 
     return true;
 }
