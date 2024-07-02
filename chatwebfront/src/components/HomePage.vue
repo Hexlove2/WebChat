@@ -99,7 +99,8 @@ export default {
                   document.getElementById('loginresult').style.color = 'blue'; // 可选：改变文字颜色
                 this.showRegisterText();          
         if (result.status === 'success')
-          this.$router.push('/chatroom');
+          // 假设在登录成功后的处理函数中
+          this.$router.push({ name: 'ChatRoom', params: { username: this.loginForm.username } });
         console.log(result);
       } catch (error) {
         console.error('登录失败:', error);

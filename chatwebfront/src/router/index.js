@@ -3,8 +3,8 @@ import HomePage from '../components/HomePage.vue'
 import ChatRoom from '../components/ChatRoom.vue'
 
 const routes = [
-  { path: '/', name: HomePage, component: HomePage },   // 默认打开 HomePage 组件
-  { path: '/chatroom', component: ChatRoom } // ChatRoom 路径指向 ChatRoom 组件
+  { path: '/', name: 'HomePage', component: HomePage },   // 默认打开 HomePage 组件
+  { path: '/chatroom/:username',name: 'ChatRoom', component: ChatRoom ,props: true } // ChatRoom 路径指向 ChatRoom 组件
 ]
 
 const router = createRouter({
