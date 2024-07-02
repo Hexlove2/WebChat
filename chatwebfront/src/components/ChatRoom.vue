@@ -21,10 +21,44 @@ export default {
   data() {
     return {
       newMessage: '',
-      messages: []
+      messages: [],
+      socket: null,
+      messageQueue: [] 
     };
   },
+  created(){
+    this.connectWebSocket();
+  },
   methods: {
+    connectWebSocket(){
+      this.socket = new WebSocket('http://localhost:7777');
+
+      this.socket.onopen = () => {
+          console.log('WebSocket connection opened');
+
+          while (this.messageQueue.length > 0) {
+          const message = this.messageQueue.shift();
+          this.socket.send(JSON.stringify(message));
+          }
+      };
+
+      this.socket.onmessage = (event) =>{
+        const data= JSON.parse(event.data);
+        
+
+        const message={
+          username: `<span style="color: blue;">[&{data.username}]</span>`,
+          content:data.message
+        };
+        
+          this.messages.push(message);
+          this.$nextTick(()=>{
+            this.scrollToBottom();
+          });
+        };
+        
+      },
+    
     sendMessage() {
       if (this.newMessage.trim() !== '') {
         const message = {
@@ -32,6 +66,20 @@ export default {
           content: this.newMessage
         };
         this.messages.push(message);
+
+
+        if (this.socket.readyState === WebSocket.OPEN) {
+          try {
+            this.socket.send(JSON.stringify(message));
+            console.log('Message sent:', message);
+          } catch (error) {
+            console.error('Failed to send message:', error);
+          }
+        } else {
+          console.error('WebSocket is not open. Ready state is:', this.socket.readyState);
+        }
+
+
         this.newMessage = '';
         this.$nextTick(() => {
           this.scrollToBottom();
