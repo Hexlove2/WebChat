@@ -5,7 +5,9 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/opt/homebrew/opt/mysql-client/include",
-                "/opt/homebrew/opt/mysql-client/lib"
+                "/opt/homebrew/opt/mysql-client/lib",
+                "/opt/homebrew/opt/openssl@3/include",
+                "/opt/homebrew/opt/openssl@3/lib"
             ],
             "defines": [],
             "macFrameworkPath": [

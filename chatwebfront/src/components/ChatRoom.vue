@@ -31,11 +31,12 @@ export default {
   },
   methods: {
     connectWebSocket(){
-      this.socket = new WebSocket('http://localhost:7777');
+      this.socket = new WebSocket('ws://localhost:7777');
 
       this.socket.onopen = () => {
           console.log('WebSocket connection opened');
-
+          this.socket.send('Hello!');
+          console.log('已发送hello消息');
           while (this.messageQueue.length > 0) {
           const message = this.messageQueue.shift();
           this.socket.send(JSON.stringify(message));
