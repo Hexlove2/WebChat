@@ -45,6 +45,7 @@ export default {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
         this.socket.close();
     }
+    
 });
   },
   
@@ -118,6 +119,7 @@ export default {
       // 启动视频流逻辑
       const constraints = {
         video: true,
+        audio: true
       };
 
       navigator.mediaDevices.getUserMedia(constraints)
