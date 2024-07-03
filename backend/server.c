@@ -14,6 +14,7 @@
 
 #define BUF_SIZE 2048
 #define MAX_CLNT 256
+#define SMALL_BUF 20
 
 void *handle_clnt(void *arg);  // 处理客户端连接的线程函数
 void error_handling(char *message);  // 错误处理函数
@@ -22,6 +23,7 @@ void perform_handshake(int sock, const char *req);  // 执行 WebSocket 握手
 char *base64_encode(const unsigned char *input, int length);  // Base64 编码函数
 int encode_frame(const char *msg, int msg_len, char *encoded_msg, int encoded_msg_len);  // 编码 WebSocket 帧
 int decode_frame(char *encoded_msg, int encoded_msg_len, char *msg, int msg_len);  // 解码 WebSocket 帧
+int read_full_frame(int sock, char *buffer, int buffer_size);
 int convert_encoding(const char *from_encoding, const char *to_encoding, char *input, size_t input_size, char *output, size_t output_size);
 
 int clnt_cnt = 0;  // 当前连接的客户端数量
@@ -73,12 +75,21 @@ int main(int argc, char const *argv[]) {
 void *handle_clnt(void *arg) {
     int sock = *((int *)arg);
     int str_len = 0, i;
+    int zero_cnt=0;
     char msg[BUF_SIZE];
     bool handshake_done = false;  // 标志位，标识是否已经完成握手
 
-    while ((str_len = read(sock, msg, sizeof(msg) - 1)) != 0) {
+    while ((str_len = read(sock, msg, sizeof(msg) - 1), MSG_WAITALL) != 0) {
+        if(str_len==0)
+          zero_cnt++;
+        else
+          zero_cnt=0;
+        if(zero_cnt>5)
+          break;
+        printf("msg大小为:%lu,str_len大小为:%d \n", sizeof(msg),str_len);
         msg[str_len] = '\0';  // 确保字符串以 null 结尾
-        printf("收到的原消息为: %s\n", msg);
+        if(!handshake_done)
+            printf("收到的原消息为: %s\n", msg);
         if (!handshake_done && strstr(msg, "Upgrade: websocket")) {
             // 检查是否为 WebSocket 握手请求
             printf("开始握手\n");
@@ -115,6 +126,9 @@ void *handle_clnt(void *arg) {
 void send_message(char *msg, int len, int sock) {
     int i;
     char encoded_msg[BUF_SIZE];
+
+    // 包装消息为JSON格式
+
     int encoded_len = encode_frame(msg, len, encoded_msg, sizeof(encoded_msg));  // 编码 WebSocket 帧
 
     pthread_mutex_lock(&mutx);
@@ -250,7 +264,20 @@ int decode_frame(char *encoded_msg, int encoded_msg_len, char *msg, int msg_len)
         return -1;
     }
 
-    memcpy(msg, encoded_msg + idx, payload_len);  // 复制负载数据到消息缓冲区
+    bool masked = (byte & 0x80) != 0;  // 检查 MASK 位
+    unsigned char masking_key[4] = {0};
+
+    if (masked) {
+        for (int i = 0; i < 4; i++) {
+            masking_key[i] = encoded_msg[idx++];
+        }
+    }
+
+    for (int i = 0; i < payload_len; i++) {
+        msg[i] = encoded_msg[idx + i] ^ (masked ? masking_key[i % 4] : 0);  // 解码负载数据
+    }
+    
+    msg[payload_len] = '\0';  // 确保消息以空字符结尾
     printf("解码后的消息: %s\n", msg);
     return payload_len;  // 返回负载长度
 }
@@ -276,3 +303,5 @@ int convert_encoding(const char *from_encoding, const char *to_encoding, char *i
     iconv_close(cd);
     return 0;
 }
+
+

@@ -76,7 +76,7 @@ export default {
     async login() {
       try {
         console.log('waiting0...');
-        const response = await fetch('http://localhost:9176/login', {
+        const response = await fetch('http://192.168.31.137:9176/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -110,7 +110,7 @@ export default {
     async register() {
       
       try {
-        const response = await fetch('http://localhost:9176/register', {
+        const response = await fetch('http://192.168.31.137:9176/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
