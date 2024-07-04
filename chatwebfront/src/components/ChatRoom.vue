@@ -3,8 +3,8 @@
     <h2>Welcome to the Chat Room</h2>
 
     <div class="video-container">
-      <video id="localVideo" autoplay playsinline></video>
-      <video id="remoteVideo" autoplay playsinline></video>
+      <video ref="localVideo" autoplay muted></video>
+      <video ref="remoteVideo" autoplay></video>
     </div>
 
     <div class="messages-chatroom">
@@ -20,14 +20,18 @@
     </div>
 
     <div class="video-buttons">
-      <button @mousedown="toggleButton('start')" @mouseup="toggleButton('start')" @click="startVideo" :class="{ active: isVideoOn }">打开视频</button>
-      <button @mousedown="toggleButton('stop')" @mouseup="toggleButton('stop')" @click="stopVideo" :class="{ active: !isVideoOn }">关闭视频</button>
+      <button id="videostart" @click="startVideo" >StartVideo</button>
+      <button id="videohangup" @click="stopVideo">Hangup</button>
     </div>
 
   </div>
 </template>
 
+
+
 <script>
+
+//************************************************************************************************************************* */
 export default {
   name: 'ChatRoom',
   props: ['username'],
@@ -36,7 +40,10 @@ export default {
       newMessage: '',
       messages: [],
       socket: null,
-      messageQueue: [] 
+      messageQueue: [] ,
+      localStream:null,
+      remoteStream:null,
+      peerConnection:null,
     };
   },
   created(){
@@ -113,36 +120,22 @@ export default {
       container.scrollTop = container.scrollHeight;
     },
 
-
     startVideo() {
-      this.isVideoOn = true;
-      // 启动视频流逻辑
-      const constraints = {
-        video: true,
-        audio: true
-      };
-
-      navigator.mediaDevices.getUserMedia(constraints)
-        .then((stream) => {
-          const videoElement = document.getElementById('localVideo');
-          videoElement.srcObject = stream;
+      navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        .then(stream => {
+          this.localStream = stream;
+          this.$refs.localVideo.srcObject = stream;
+          stream.getTracks().forEach(track => {
+            this.peerConnection.addTrack(track, stream);
+          });
         })
-        .catch((error) => {
-          console.error('Error accessing media devices.', error);
-        });
+        .catch(error => console.error('Error accessing media devices.', error));
     },
     stopVideo() {
-      this.isVideoOn = false;
-      // 停止视频流逻辑
-      const videoElement = document.getElementById('localVideo');
-      const stream = videoElement.srcObject;
-      const tracks = stream.getTracks();
-
-      tracks.forEach((track) => {
-        track.stop();
-      });
-
-      videoElement.srcObject = null;
+      if (this.localStream) {
+        this.localStream.getTracks().forEach(track => track.stop());
+        this.localStream = null;
+      }
     },
 
 
