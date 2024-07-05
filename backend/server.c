@@ -30,7 +30,7 @@ int clnt_cnt = 0;  // 当前连接的客户端数量
 int clnt_socks[MAX_CLNT];  // 客户端套接字数组
 pthread_mutex_t mutx;  // 互斥锁
 
-// 编译命令: gcc server.c -o cser -lssl -lcrypto -lpthread -liconv
+// 编译命令: gcc -g server.c -o cser -lssl -lcrypto -lpthread -liconv
 int main(int argc, char const *argv[]) {
     int serv_sock, clnt_sock;
     struct sockaddr_in serv_adr, clnt_adr;

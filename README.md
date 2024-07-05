@@ -14,7 +14,7 @@ nodemon
 ```
 cd backend
 // make sure you have installed these parts
-gcc server.c -o cser -lssl -lcrypto -lpthread -liconv
+gcc -g server.c -o cser -lssl -lcrypto -lpthread -liconv
 ```
 ### Frontend setup
 **1.Navigate to the frontend directory, install dependencies, and run the development server:**

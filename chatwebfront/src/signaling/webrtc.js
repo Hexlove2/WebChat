@@ -1,5 +1,3 @@
-import './style.css';
-
 // 导入Firebase的核心模块和Firestore模块，用于数据库操作
 import firebase from 'firebase/app';
 import 'firebase/firestore';
