@@ -11,8 +11,7 @@
           <a href="#" class="social"><i class="iconfont icon-github"></i></a>
         </div>
         <span id="register_text">You can choose one of the above methods to register your account </span>
-        <input type="text"  placeholder="Username" v-model="registerForm.username" />
-        <br>  
+        <input type="text"  placeholder="Username" v-model="registerForm.username" /> 
         <input type="password" placeholder="Password" v-model="registerForm.password" />
         <input type="email" placeholder="E-Mail" v-model="registerForm.email" />
         <button id="send_code">Send Verification code</button>

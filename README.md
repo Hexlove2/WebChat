@@ -50,7 +50,3 @@ Emmm, this's a big issue, the thread will be created for each client's connectio
 **2.VUE part** 
 
 As I lack extensive experience with Vue, the frontend may not be as clean or efficient as it could be. I plan to learn more and improve this part over time.
-
-### TBH, my knowledge in some areas is limited, so updates might be slow.
-
-![Screenshot 2024-07-04 at 23.06.35](https://raw.githubusercontent.com/Hexlove2/images1/main/images/Screenshot%202024-07-04%20at%2023.06.35.png)

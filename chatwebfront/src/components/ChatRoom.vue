@@ -31,7 +31,7 @@
 
 <script>
 
-//************************************************************************************************************************* */
+//**************************************************************************************************************************/
 export default {
   name: 'ChatRoom',
   props: ['username'],
@@ -64,10 +64,12 @@ export default {
           console.log('WebSocket connection opened');
           //this.socket.send('Hello!');
           console.log('已发送hello消息');
+          /*
           while (this.messageQueue.length > 0) {
           const message = this.messageQueue.shift();
           this.socket.send(JSON.stringify(message));
-          }
+          
+          }*/
       };
 
       this.socket.onmessage = (event) =>{

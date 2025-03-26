@@ -9,7 +9,7 @@
 #define BUF_SIZE 1024
 #define SMALL_BUF 1024
 
-void handle_request(int client_sock);
+void handle_request(int clnt_sock);
 void error_handling(char *message);
 void send_response(int clnt_sock, const char *message);
 void extract_value(const char *json, const char *key, char *value, size_t value_size);
@@ -76,7 +76,7 @@ void handle_request(int clnt_sock) {
     // Parsing the HTTP method from the request line
     sscanf(req_line, "%s", method);
     printf("********************************************************************* \n");
-    printf("%s\n",req_line);
+    printf("%s",req_line);
     printf("********************************************************************* \n");
     // Handling the OPTIONS request (preflight request for CORS)
     if (strcmp(method, "OPTIONS") == 0) {
